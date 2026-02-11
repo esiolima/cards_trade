@@ -39,8 +39,11 @@ function imageToBase64(imagePath: string): string {
 }
 
 function normalizeType(tipo: string): string {
+  if (!tipo) return "";
+
   let normalized = String(tipo)
     .toLowerCase()
+    .trim()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
@@ -91,7 +94,7 @@ export class CardGenerator extends EventEmitter {
 
         let logoBase64 = "";
         if (row.logo) {
-          const logoFileName = row.logo.toLowerCase();
+          const logoFileName = row.logo.toLowerCase().trim();
           const logoPath = path.join(LOGOS_DIR, logoFileName);
           logoBase64 = imageToBase64(logoPath);
         }
@@ -112,30 +115,6 @@ export class CardGenerator extends EventEmitter {
 
         await page.goto(`file://${path.resolve(tmpHtmlPath)}`, {
           waitUntil: "networkidle0",
-        });
-
-        // 🔥 AUTO SCALE REAL E DIRETO
-        await page.evaluate(() => {
-          const el = document.querySelector(".cupom-codigo") as HTMLElement;
-          if (!el) return;
-
-          const container = el.parentElement as HTMLElement;
-
-          el.style.whiteSpace = "nowrap";
-          el.style.display = "inline-block";
-          el.style.fontSize = "160px";
-
-          const availableWidth =
-            container.getBoundingClientRect().width - 40;
-
-          const textWidth =
-            el.getBoundingClientRect().width;
-
-          if (textWidth > availableWidth) {
-            const ratio = availableWidth / textWidth;
-            const newSize = Math.floor(160 * ratio);
-            el.style.fontSize = newSize + "px";
-          }
         });
 
         const ordem = String(row.ordem || processed + 1).trim();
