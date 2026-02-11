@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<title>Promoção</title>
+
+<style>
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/Inter-Regular.ttf') format('truetype');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/Inter-Bold.ttf') format('truetype');
+  font-weight: 700;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/Inter-Black.ttf') format('truetype');
+  font-weight: 900;
+}
+
+* { 
+  box-sizing: border-box;
+  font-family: Inter, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #1F3C6E;
+  font-family: Inter, sans-serif;
+}
+
+/* CARD */
+.card {
+  width: 1400px;
+  height: 2115px;
+  background: #ffffff;
+  border-radius: 140px;
+  border: 12px solid #F2C94C;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 40px;
+  overflow: hidden;
+}
+
+/* ===== LOGO (COMUM) ===== */
+.logo {
+  margin-top: 90px;
+  flex-shrink: 0;
+}
+.logo img {
+  max-height: 320px;
+  max-width: 800px;
+  object-fit: contain;
+}
+
+/* ===== TÍTULO ===== */
+.faixa-promocao {
+  margin-top: 70px;
+  background: #F26A21;
+  color: #ffffff;
+  padding: 40px 100px;
+  border-radius: 999px;
+  font-family: Inter, sans-serif;
+  font-weight: 700;
+  font-size: clamp(80px, 10vw, 120px);
+  text-transform: uppercase;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+/* ===== MECÂNICA ===== */
+.condicao {
+  margin-top: 40px;
+  max-width: 1120px;
+  text-align: center;
+  font-family: Inter, sans-serif;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 400;
+  line-height: 1.15;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* ===== BENEFÍCIO ===== */
+.beneficio {
+  margin-top: 140px;
+  text-align: center;
+  line-height: 1.05;
+  font-family: Inter, sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.beneficio-texto {
+  font-family: Inter, sans-serif;
+  font-weight: 900;
+  font-size: clamp(150px, 20vw, 240px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.beneficio-texto .percent {
+  font-family: Inter, sans-serif;
+  font-weight: 900;
+  font-size: clamp(150px, 20vw, 240px);
+  margin-left: 20px;
+  margin-bottom: -20px;
+}
+
+/* ===== LEGAL (COMUM) ===== */
+.legal {
+  margin-top: 80px;
+  max-width: 1100px;
+  text-align: center;
+  font-family: Inter, sans-serif;
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 400;
+  line-height: 1.15;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* ===== RODAPÉ (COMUM) ===== */
+.rodape {
+  margin-top: auto;
+  margin-bottom: 60px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.uf {
+  font-family: Inter, sans-serif;
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.segmento-label {
+  margin-top: 24px;
+  font-family: Inter, sans-serif;
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.segmento-valor {
+  margin-top: 0;
+  font-family: Inter, sans-serif;
+  font-size: clamp(32px, 4vw, 50px);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+</style>
+</head>
+
+<body>
+
+  <div class="card">
+
+    <div class="logo">
+      <img src="{{LOGO}}" alt="Logo do fornecedor">
+    </div>
+
+    <div class="faixa-promocao">PROMOÇÃO</div>
+
+    <div class="condicao">
+      {{TEXTO}}
+    </div>
+
+    <div class="beneficio">
+      <div class="beneficio-texto">{{VALOR}}</div>
+    </div>
+
+    <div class="legal">
+      {{LEGAL}}
+    </div>
+
+    <div class="rodape">
+      <div class="uf">{{UF}}</div>
+      <div class="segmento-label">SEGMENTO DE CLIENTES:</div>
+      <div class="segmento-valor">{{SEGMENTO}}</div>
+    </div>
+
+  </div>
+
+</body>
+</html>
