@@ -114,34 +114,28 @@ export class CardGenerator extends EventEmitter {
           waitUntil: "networkidle0",
         });
 
-        // 🔥 AUTO SCALE PROPORCIONAL DEFINITIVO
+        // 🔥 AUTO SCALE REAL E DIRETO
         await page.evaluate(() => {
-          function autoFit(selector: string, maxSize: number, minSize = 6) {
-            const el = document.querySelector(selector) as HTMLElement;
-            if (!el) return;
+          const el = document.querySelector(".cupom-codigo") as HTMLElement;
+          if (!el) return;
 
-            const container = el.parentElement as HTMLElement;
+          const container = el.parentElement as HTMLElement;
 
-            el.style.whiteSpace = "nowrap";
-            el.style.fontSize = maxSize + "px";
+          el.style.whiteSpace = "nowrap";
+          el.style.display = "inline-block";
+          el.style.fontSize = "160px";
 
-            const availableWidth =
-              container.getBoundingClientRect().width - 40;
+          const availableWidth =
+            container.getBoundingClientRect().width - 40;
 
-            const textWidth =
-              el.getBoundingClientRect().width;
+          const textWidth =
+            el.getBoundingClientRect().width;
 
-            if (textWidth > availableWidth) {
-              const ratio = availableWidth / textWidth;
-              let newSize = Math.floor(maxSize * ratio);
-
-              if (newSize < minSize) newSize = minSize;
-
-              el.style.fontSize = newSize + "px";
-            }
+          if (textWidth > availableWidth) {
+            const ratio = availableWidth / textWidth;
+            const newSize = Math.floor(160 * ratio);
+            el.style.fontSize = newSize + "px";
           }
-
-          autoFit(".cupom-codigo", 160, 6);
         });
 
         const ordem = String(row.ordem || processed + 1).trim();
