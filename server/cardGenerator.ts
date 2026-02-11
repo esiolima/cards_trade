@@ -89,20 +89,11 @@ export class CardGenerator extends EventEmitter {
         const templatePath = path.join(TEMPLATES_DIR, `${tipo}.html`);
         let html = fs.readFileSync(templatePath, "utf8");
 
-        // Logo
         let logoBase64 = "";
         if (row.logo) {
           const logoFileName = row.logo.toLowerCase();
           const logoPath = path.join(LOGOS_DIR, logoFileName);
           logoBase64 = imageToBase64(logoPath);
-
-          if (!logoBase64) {
-            const files = fs.readdirSync(LOGOS_DIR);
-            const matchingFile = files.find(f => f.toLowerCase() === logoFileName);
-            if (matchingFile) {
-              logoBase64 = imageToBase64(path.join(LOGOS_DIR, matchingFile));
-            }
-          }
         }
 
         html = html.replaceAll("{{LOGO}}", logoBase64);
@@ -113,35 +104,6 @@ export class CardGenerator extends EventEmitter {
         html = html.replaceAll("{{UF}}", upper(row.uf));
         html = html.replaceAll("{{SEGMENTO}}", upper(row.segmento));
 
-        // 🔥 AUTO SCALE SCRIPT
-        html += `
-<script>
-function autoFitText(selector, maxFontSize) {
-  const el = document.querySelector(selector);
-  if (!el) return;
-
-  let fontSize = maxFontSize;
-  el.style.whiteSpace = "nowrap";
-  el.style.display = "flex";
-  el.style.justifyContent = "center";
-  el.style.alignItems = "center";
-  el.style.fontSize = fontSize + "px";
-
-  const parentWidth = el.parentElement.clientWidth - 20;
-
-  while (el.scrollWidth > parentWidth && fontSize > 40) {
-    fontSize -= 2;
-    el.style.fontSize = fontSize + "px";
-  }
-}
-
-window.onload = function() {
-  autoFitText(".cupom-codigo", 150);
-  autoFitText(".percentual", 420);
-};
-</script>
-`;
-
         const tmpHtmlPath = path.join(TMP_DIR, `card_${processed + 1}.html`);
         fs.writeFileSync(tmpHtmlPath, html, "utf8");
 
@@ -149,11 +111,30 @@ window.onload = function() {
         await page.setViewport({ width: 1400, height: 2115 });
 
         await page.goto(`file://${path.resolve(tmpHtmlPath)}`, {
-          waitUntil: "networkidle2",
-          timeout: 30000,
+          waitUntil: "networkidle0",
         });
 
-        // 🔥 NOVO NOME DO PDF
+        // 🔥 EXECUTA AUTO-SCALE DIRETAMENTE NO PUPPETEER
+        await page.evaluate(() => {
+          function autoFit(selector: string, maxSize: number, minSize = 8) {
+            const el = document.querySelector(selector) as HTMLElement;
+            if (!el) return;
+
+            const container = el.parentElement as HTMLElement;
+            const availableWidth = container.clientWidth - 40;
+
+            let fontSize = maxSize;
+            el.style.fontSize = fontSize + "px";
+
+            while (el.scrollWidth > availableWidth && fontSize > minSize) {
+              fontSize -= 1;
+              el.style.fontSize = fontSize + "px";
+            }
+          }
+
+          autoFit(".cupom-codigo", 160, 8);
+        });
+
         const ordem = String(row.ordem || processed + 1).trim();
         const tipoUpper = tipo.toUpperCase();
 
@@ -167,22 +148,12 @@ window.onload = function() {
           width: "1400px",
           height: "2115px",
           printBackground: true,
-          pageRanges: "1",
         });
 
         await page.close();
 
         processed++;
         const percentage = Math.round((processed / total) * 100);
-
-        if (onProgress) {
-          onProgress({
-            total,
-            processed,
-            percentage,
-            currentCard: `${processed}/${total}`,
-          });
-        }
 
         this.emit("progress", {
           total,
