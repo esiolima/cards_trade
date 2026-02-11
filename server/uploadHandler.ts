@@ -4,34 +4,72 @@ import path from "path";
 import fs from "fs";
 
 const UPLOAD_DIR = path.resolve("uploads");
+const LOGOS_DIR = path.resolve("logos");
 
 // Ensure upload directory exists
 if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
+// Ensure logos directory exists
+if (!fs.existsSync(LOGOS_DIR)) {
+  fs.mkdirSync(LOGOS_DIR, { recursive: true });
+}
+
+/* =========================
+   UPLOAD PLANILHA (.xlsx)
+========================= */
+
+const excelStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, UPLOAD_DIR);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const uniqueSuffix =
+      Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
   },
 });
 
-const upload = multer({
-  storage,
+const uploadExcel = multer({
+  storage: excelStorage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req, file, cb) => {
-    // Only accept .xlsx files
     if (!file.originalname.endsWith(".xlsx")) {
       return cb(new Error("Only .xlsx files are allowed"));
     }
+    cb(null, true);
+  },
+});
 
-    // Max file size: 10MB
-    if (file.size > 10 * 1024 * 1024) {
-      return cb(new Error("File size exceeds 10MB limit"));
+/* =========================
+   UPLOAD LOGO (IMAGENS)
+========================= */
+
+const logoStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, LOGOS_DIR);
+  },
+  filename: (req, file, cb) => {
+    // Salva com nome original em lowercase
+    cb(null, file.originalname.toLowerCase());
+  },
+});
+
+const uploadLogo = multer({
+  storage: logoStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB para imagem
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/webp",
+      "image/svg+xml",
+    ];
+
+    if (!allowedTypes.includes(file.mimetype)) {
+      return cb(new Error("Only image files are allowed"));
     }
 
     cb(null, true);
@@ -39,19 +77,41 @@ const upload = multer({
 });
 
 export function setupUploadRoute(app: express.Application) {
-  app.post("/api/upload", upload.single("file"), (req: Request, res: Response) => {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
+
+  // Upload planilha
+  app.post(
+    "/api/upload",
+    uploadExcel.single("file"),
+    (req: Request, res: Response) => {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      res.json({
+        success: true,
+        filePath: req.file.path,
+        fileName: req.file.originalname,
+      });
     }
+  );
 
-    res.json({
-      success: true,
-      filePath: req.file.path,
-      fileName: req.file.originalname,
-    });
-  });
+  // Upload logo
+  app.post(
+    "/api/upload-logo",
+    uploadLogo.single("logo"),
+    (req: Request, res: Response) => {
+      if (!req.file) {
+        return res.status(400).json({ error: "No logo uploaded" });
+      }
 
-  // Download route for ZIP files
+      res.json({
+        success: true,
+        fileName: req.file.originalname,
+      });
+    }
+  );
+
+  // Download ZIP
   app.get("/api/download", (req: Request, res: Response) => {
     const { zipPath } = req.query;
 
@@ -59,7 +119,6 @@ export function setupUploadRoute(app: express.Application) {
       return res.status(400).json({ error: "Invalid zip path" });
     }
 
-    // Security: ensure path is within output directory
     const outputDir = path.resolve("output");
     const resolvedPath = path.resolve(zipPath);
 
@@ -76,14 +135,13 @@ export function setupUploadRoute(app: express.Application) {
         console.error("Download error:", err);
       }
 
-      // Clean up uploaded file and generated files after download
-      const uploadsDir = path.resolve("uploads");
-      if (fs.existsSync(uploadsDir)) {
-        const files = fs.readdirSync(uploadsDir);
+      // Cleanup uploads folder
+      if (fs.existsSync(UPLOAD_DIR)) {
+        const files = fs.readdirSync(UPLOAD_DIR);
         for (const file of files) {
           try {
-            fs.unlinkSync(path.join(uploadsDir, file));
-          } catch (e) {
+            fs.unlinkSync(path.join(UPLOAD_DIR, file));
+          } catch {
             // Ignore cleanup errors
           }
         }
