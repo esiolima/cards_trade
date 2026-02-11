@@ -40,7 +40,6 @@ body {
 .upper { text-transform: uppercase; }
 .text-wrap { text-align: center; }
 
-/* ================= CARD ================= */
 .card {
   width: 1400px;
   height: 2115px;
@@ -54,7 +53,6 @@ body {
   overflow: hidden;
 }
 
-/* ===== LOGO (COMUM) ===== */
 .logo {
   margin-top: 90px;
   flex-shrink: 0;
@@ -65,11 +63,9 @@ body {
   object-fit: contain;
 }
 
-/* ===== MECÂNICA ===== */
 .condicao {
   margin-top: 70px;
   max-width: 1120px;
-  font-family: Inter, sans-serif;
   font-size: clamp(36px, 5vw, 56px);
   font-weight: 400;
   line-height: 1.15;
@@ -78,15 +74,6 @@ body {
 }
 
 /* ===== BENEFÍCIO ===== */
-.ganhe {
-  margin-top: 40px;
-  margin-bottom: 0;
-  font-family: Inter, sans-serif;
-  font-size: clamp(60px, 8vw, 96px);
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
 .percentual {
   display: flex;
   align-items: flex-end;
@@ -96,32 +83,27 @@ body {
 }
 
 .numero {
-  font-family: Inter, sans-serif;
   font-weight: 900;
-  font-size: clamp(300px, 40vw, 540px);
+  font-size: 540px; /* tamanho máximo fixo */
+  white-space: nowrap;
 }
 
 .percent {
-  font-family: Inter, sans-serif;
   font-weight: 900;
-  font-size: clamp(300px, 40vw, 540px);
+  font-size: 540px;
   margin-left: 12px;
-  margin-bottom: 0;
 }
 
 .desconto {
   margin-top: -100px;
-  font-family: Inter, sans-serif;
   font-size: clamp(80px, 10vw, 120px);
   font-weight: 700;
   flex-shrink: 0;
 }
 
-/* ===== LEGAL (COMUM) ===== */
 .legal {
   margin-top: 80px;
   max-width: 1100px;
-  font-family: Inter, sans-serif;
   font-size: clamp(24px, 3vw, 36px);
   font-weight: 400;
   line-height: 1.15;
@@ -149,8 +131,7 @@ body {
 
 .cupom-label span {
   transform: rotate(-90deg);
-  font-family: Inter, sans-serif;
-  font-size: clamp(40px, 4.8vw, 57.6px);
+  font-size: 58px;
   font-weight: 700;
   color: #ffffff;
 }
@@ -158,16 +139,13 @@ body {
 .cupom-codigo {
   display: flex;
   align-items: center;
-  padding-left: 40px;
-  font-family: Inter, sans-serif;
-  font-size: clamp(100px, 12vw, 160px);
+  justify-content: center; /* centralização horizontal */
+  font-size: 160px; /* tamanho máximo fixo */
   font-weight: 900;
   color: #ffffff;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* ===== RODAPÉ (COMUM) ===== */
 .rodape {
   margin-top: auto;
   margin-bottom: 60px;
@@ -176,20 +154,17 @@ body {
 }
 
 .uf {
-  font-family: Inter, sans-serif;
   font-size: clamp(32px, 4vw, 48px);
   font-weight: 700;
 }
 
 .segmento-label {
   margin-top: 24px;
-  font-family: Inter, sans-serif;
   font-size: clamp(24px, 3vw, 36px);
   font-weight: 400;
 }
 
 .segmento-valor {
-  font-family: Inter, sans-serif;
   font-size: clamp(32px, 4vw, 50px);
   font-weight: 700;
 }
@@ -226,5 +201,28 @@ body {
   </div>
 
 </div>
+
+<script>
+function autoFit(selector, maxSize) {
+  const el = document.querySelector(selector);
+  if (!el) return;
+
+  let fontSize = maxSize;
+  el.style.fontSize = fontSize + "px";
+
+  const maxWidth = el.parentElement.clientWidth - 20;
+
+  while (el.scrollWidth > maxWidth && fontSize > 40) {
+    fontSize -= 2;
+    el.style.fontSize = fontSize + "px";
+  }
+}
+
+window.onload = function() {
+  autoFit(".cupom-codigo", 160);
+  autoFit(".numero", 540);
+};
+</script>
+
 </body>
 </html>
