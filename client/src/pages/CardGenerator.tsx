@@ -157,7 +157,7 @@ export default function CardGenerator() {
               <h1 className={`text-3xl font-bold ${textPrimary}`}>
                 Gerador de Cards
               </h1>
-              <p className={`text-sm ${textSecondary}`}>Powered by Núcleo de Marketing</p>
+              <p className={`text-sm ${textSecondary}`}>Para Produção de Jornal de Ofertas</p>
             </div>
           </div>
           
@@ -434,7 +434,7 @@ export default function CardGenerator() {
         {/* Footer */}
         <div className={`mt-16 pt-8 border-t ${borderColor} text-center`}>
           <p className={`text-sm ${textSecondary}`}>
-            Versão 1.0
+            Desenvolvido por Esio Lima - Versão 1.0
           </p>
         </div>
       </div>
