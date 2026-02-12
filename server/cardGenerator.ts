@@ -29,7 +29,8 @@ interface GenerationProgress {
   currentCard: string;
 }
 
-const upper = (v: string | undefined) => String(v || "").toUpperCase().trim();
+const upper = (v: string | undefined) =>
+  String(v || "").toUpperCase().trim();
 
 function imageToBase64(imagePath: string): string {
   if (!fs.existsSync(imagePath)) return "";
@@ -59,8 +60,11 @@ export class CardGenerator extends EventEmitter {
   private browser: Browser | null = null;
 
   async initialize() {
-    if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-    if (!fs.existsSync(TMP_DIR)) fs.mkdirSync(TMP_DIR, { recursive: true });
+    if (!fs.existsSync(OUTPUT_DIR))
+      fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+
+    if (!fs.existsSync(TMP_DIR))
+      fs.mkdirSync(TMP_DIR, { recursive: true });
 
     this.browser = await puppeteer.launch({
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -106,27 +110,25 @@ export class CardGenerator extends EventEmitter {
         const logoBase64 = imageToBase64(logoPath);
 
         /* =========================
-           VALOR (% RULE)
+           VALOR (REMOVE % SEM ADICIONAR)
         ========================= */
 
         let valorFinal = upper(row.valor);
 
         if (tipo === "cupom" || tipo === "queda" || tipo === "bc") {
           if (valorFinal) {
-            // Remove todos os %
-            valorFinal = valorFinal.replace(/%+/g, "");
-
-            // Adiciona apenas um %
-            valorFinal = `${valorFinal}%`;
+            // Remove TODOS os %
+            valorFinal = valorFinal.replace(/%+/g, "").trim();
           }
         }
 
         if (tipo === "promocao") {
+          // PROMO mantém exatamente o que foi digitado (apenas caixa alta)
           valorFinal = upper(row.valor);
         }
 
         /* =========================
-           TEXTO / CUPOM
+           OUTROS CAMPOS
         ========================= */
 
         const textoFinal = upper(row.texto);
@@ -151,7 +153,11 @@ export class CardGenerator extends EventEmitter {
            GERAR PDF
         ========================= */
 
-        const tmpHtmlPath = path.join(TMP_DIR, `card_${processed + 1}.html`);
+        const tmpHtmlPath = path.join(
+          TMP_DIR,
+          `card_${processed + 1}.html`
+        );
+
         fs.writeFileSync(tmpHtmlPath, html, "utf8");
 
         const page = await this.browser.newPage();
