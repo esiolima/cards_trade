@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Upload, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Upload, Trash2, AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
@@ -22,7 +22,6 @@ export default function LogoManager() {
   const deleteLogoMutation = trpc.logo.deleteLogo.useMutation();
   const { data: logosData } = trpc.logo.listLogos.useQuery();
 
-  // Load logos on mount
   useEffect(() => {
     if (logosData?.logos) {
       setLogos(logosData.logos);
@@ -33,13 +32,11 @@ export default function LogoManager() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
       setError("Apenas arquivos PNG, JPG e JPEG são permitidos");
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setError("O arquivo não pode exceder 5MB");
       return;
@@ -49,7 +46,6 @@ export default function LogoManager() {
     setError(null);
     setSuccess(null);
 
-    // Check if logo already exists
     const logoName = file.name;
     const exists = logos.some((logo) => logo.name === logoName);
 
@@ -78,12 +74,10 @@ export default function LogoManager() {
         throw new Error("Erro ao fazer upload do logo");
       }
 
-      const data = await response.json();
       setSuccess(`Logo "${file.name}" enviado com sucesso!`);
       setSelectedFile(null);
       setConfirmReplace(null);
 
-      // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -111,10 +105,22 @@ export default function LogoManager() {
 
   return (
     <div className="w-full max-w-4xl mx-auto p-6 space-y-6">
+
+      {/* BOTÃO VOLTAR */}
+      <div>
+        <Button
+          onClick={() => window.location.href = "/"}
+          variant="outline"
+          className="flex items-center gap-2 border-slate-600 text-slate-300 hover:bg-slate-800"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar
+        </Button>
+      </div>
+
       <Card className="p-6 bg-slate-900 border-slate-700">
         <h2 className="text-2xl font-bold text-white mb-4">Gerenciador de Logos</h2>
 
-        {/* Upload Section */}
         <div className="space-y-4">
           <div className="border-2 border-dashed border-slate-600 rounded-lg p-8 text-center hover:border-slate-500 transition">
             <Upload className="w-12 h-12 text-slate-400 mx-auto mb-4" />
@@ -138,7 +144,6 @@ export default function LogoManager() {
             </Button>
           </div>
 
-          {/* Messages */}
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-900/20 border border-red-700 rounded-lg text-red-300">
               <AlertCircle className="w-5 h-5" />
@@ -152,41 +157,9 @@ export default function LogoManager() {
               {success}
             </div>
           )}
-
-          {/* Confirm Replace Dialog */}
-          {confirmReplace && (
-            <div className="p-4 bg-yellow-900/20 border border-yellow-700 rounded-lg space-y-4">
-              <p className="text-yellow-300">
-                O logo "{confirmReplace.name}" já existe. Deseja substituir?
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => uploadLogo(confirmReplace.file)}
-                  disabled={isLoading}
-                  className="bg-yellow-600 hover:bg-yellow-700"
-                >
-                  Sim, Substituir
-                </Button>
-                <Button
-                  onClick={() => {
-                    setConfirmReplace(null);
-                    if (fileInputRef.current) {
-                      fileInputRef.current.value = "";
-                    }
-                  }}
-                  disabled={isLoading}
-                  variant="outline"
-                  className="border-slate-600 text-slate-300"
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </Card>
 
-      {/* Logos List */}
       <Card className="p-6 bg-slate-900 border-slate-700">
         <h3 className="text-xl font-bold text-white mb-4">Logos Disponíveis</h3>
 
@@ -203,13 +176,9 @@ export default function LogoManager() {
                   src={`/logos/${logo.name}`}
                   alt={logo.name}
                   className="w-full h-32 object-contain mb-2"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/logos/blank.png";
-                  }}
                 />
                 <p className="text-sm text-slate-300 truncate">{logo.name}</p>
 
-                {/* Delete Button */}
                 <button
                   onClick={() => setConfirmDelete(logo.name)}
                   className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition bg-red-600 hover:bg-red-700 p-2 rounded"
@@ -217,38 +186,11 @@ export default function LogoManager() {
                 >
                   <Trash2 className="w-4 h-4 text-white" />
                 </button>
-
-                {/* Confirm Delete Dialog */}
-                {confirmDelete === logo.name && (
-                  <div className="absolute inset-0 bg-black/80 rounded-lg flex flex-col items-center justify-center gap-2 p-2">
-                    <p className="text-white text-xs text-center">
-                      Deletar "{logo.name}"?
-                    </p>
-                    <div className="flex gap-1">
-                      <Button
-                        onClick={() => handleDeleteLogo(logo.name)}
-                        disabled={isLoading}
-                        className="bg-red-600 hover:bg-red-700 text-xs h-7"
-                      >
-                        Sim
-                      </Button>
-                      <Button
-                        onClick={() => setConfirmDelete(null)}
-                        disabled={isLoading}
-                        variant="outline"
-                        className="border-slate-600 text-slate-300 text-xs h-7"
-                      >
-                        Não
-                      </Button>
-                    </div>
-                  </div>
-                )}
               </div>
             ))}
           </div>
         )}
       </Card>
-
 
     </div>
   );
