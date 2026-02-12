@@ -92,24 +92,36 @@ export class CardGenerator extends EventEmitter {
         const templatePath = path.join(TEMPLATES_DIR, `${tipo}.html`);
         let html = fs.readFileSync(templatePath, "utf8");
 
-        // LOGO
         let logoBase64 = "";
         if (row.logo) {
-          const logoFileName = row.logo.toLowerCase().trim();
-          const logoPath = path.join(LOGOS_DIR, logoFileName);
+          const logoPath = path.join(LOGOS_DIR, row.logo.toLowerCase().trim());
           logoBase64 = imageToBase64(logoPath);
         }
 
-        // REGRA 22 CARACTERES CUPOM
-        let cupomTexto = upper(row.cupom);
-        if (cupomTexto.length > 22) {
-          cupomTexto = "XXXXX";
+        /* ===============================
+           REGRA DO VALOR
+        =============================== */
+
+        let valorFinal = upper(row.valor);
+
+        if (["cupom", "queda", "bc"].includes(tipo)) {
+          valorFinal = valorFinal.replace(/\s/g, "");
+
+          if (!valorFinal.endsWith("%")) {
+            valorFinal = valorFinal + "%";
+          }
         }
+
+        if (tipo === "promocao") {
+          valorFinal = upper(row.valor); // exatamente como veio, só caixa alta
+        }
+
+        /* =============================== */
 
         html = html.replaceAll("{{LOGO}}", logoBase64);
         html = html.replaceAll("{{TEXTO}}", upper(row.texto));
-        html = html.replaceAll("{{VALOR}}", upper(row.valor));
-        html = html.replaceAll("{{CUPOM}}", cupomTexto);
+        html = html.replaceAll("{{VALOR}}", valorFinal);
+        html = html.replaceAll("{{CUPOM}}", upper(row.cupom));
         html = html.replaceAll("{{LEGAL}}", upper(row.legal));
         html = html.replaceAll("{{UF}}", upper(row.uf));
         html = html.replaceAll("{{SEGMENTO}}", upper(row.segmento));
@@ -124,12 +136,13 @@ export class CardGenerator extends EventEmitter {
           waitUntil: "networkidle0",
         });
 
-        // 🔥 NOME DO PDF BASEADO NA COLUNA ORDEM + TIPO
         const ordem = String(row.ordem || processed + 1).trim();
         const tipoUpper = tipo.toUpperCase();
 
-        const pdfFileName = `${ordem}_${tipoUpper}.pdf`;
-        const pdfPath = path.join(OUTPUT_DIR, pdfFileName);
+        const pdfPath = path.join(
+          OUTPUT_DIR,
+          `${ordem}_${tipoUpper}.pdf`
+        );
 
         await page.pdf({
           path: pdfPath,
@@ -192,10 +205,17 @@ export class CardGenerator extends EventEmitter {
 
   private cleanup() {
     if (fs.existsSync(TMP_DIR)) {
-      const files = fs.readdirSync(TMP_DIR);
-      for (const file of files) {
-        fs.unlinkSync(path.join(TMP_DIR, file));
-      }
+      fs.readdirSync(TMP_DIR).forEach(file =>
+        fs.unlinkSync(path.join(TMP_DIR, file))
+      );
+    }
+
+    if (fs.existsSync(OUTPUT_DIR)) {
+      fs.readdirSync(OUTPUT_DIR).forEach(file => {
+        if (file.endsWith(".pdf")) {
+          fs.unlinkSync(path.join(OUTPUT_DIR, file));
+        }
+      });
     }
   }
 
