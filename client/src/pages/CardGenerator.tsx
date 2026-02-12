@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Upload, CheckCircle2, AlertCircle, Download, Hourglass, Moon, Sun } from "lucide-react";
+import { Upload, CheckCircle2, AlertCircle, Download, Hourglass, Moon, Sun, Image } from "lucide-react";
 
 interface ProgressData {
   total: number;
@@ -22,6 +23,7 @@ export default function CardGenerator() {
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   const [isDark, setIsDark] = useState(true);
   const socketRef = useRef<Socket | null>(null);
+  const [, setLocation] = useLocation();
 
   const generateCardsMutation = trpc.card.generateCards.useMutation();
 
@@ -157,7 +159,7 @@ export default function CardGenerator() {
               <h1 className={`text-3xl font-bold ${textPrimary}`}>
                 Gerador de Cards
               </h1>
-              <p className={`text-sm ${textSecondary}`}>Núcleo de Comunicação e Marketing / Trade Martins</p>
+              <p className={`text-sm ${textSecondary}`}>Powered by Núcleo de Marketing</p>
             </div>
           </div>
           
@@ -193,34 +195,9 @@ export default function CardGenerator() {
 
                   {/* File Input */}
                   <div
-  onClick={() => document.getElementById("file-input")?.click()}
-  onDragOver={(e) => {
-    e.preventDefault();
-  }}
-  onDrop={(e) => {
-    e.preventDefault();
-
-    const droppedFile = e.dataTransfer.files?.[0];
-    if (!droppedFile) return;
-
-    if (!droppedFile.name.endsWith(".xlsx")) {
-      setError("Por favor, selecione um arquivo .xlsx válido");
-      return;
-    }
-
-    if (droppedFile.size > 10 * 1024 * 1024) {
-      setError("O arquivo não pode exceder 10MB");
-      return;
-    }
-
-    setFile(droppedFile);
-    setError(null);
-    setZipPath(null);
-    setProgress(null);
-  }}
-  className={`border-2 border-dashed ${uploadBorder} rounded-xl p-12 text-center cursor-pointer transition-all duration-300 ${uploadBg}`}
->
-
+                    onClick={() => document.getElementById("file-input")?.click()}
+                    className={`border-2 border-dashed ${uploadBorder} rounded-xl p-12 text-center cursor-pointer transition-all duration-300 ${uploadBg}`}
+                  >
                     <div className="flex flex-col items-center space-y-3">
                       <div className={`p-4 rounded-full ${isDark ? "bg-blue-900/30" : "bg-blue-100"}`}>
                         <Upload className={`w-8 h-8 ${accentColor}`} />
@@ -428,13 +405,22 @@ export default function CardGenerator() {
                 </div>
               </div>
             ))}
+            
+            
+            {/* Logo Manager Button */}
+            <Button
+              onClick={() => setLocation("/logos")}
+              className={`w-full ${isDark ? "bg-purple-900 hover:bg-purple-800" : "bg-purple-600 hover:bg-purple-700"} text-white py-6 text-lg font-semibold rounded-lg transition-all duration-300 flex items-center justify-center space-x-2`}
+            >
+              <Image className="w-5 h-5" />
+              <span>Gerenciar Logos</span>
+            </Button>
           </div>
         </div>
-
         {/* Footer */}
         <div className={`mt-16 pt-8 border-t ${borderColor} text-center`}>
           <p className={`text-sm ${textSecondary}`}>
-            Desenvolvido por Esio Lima - Versão 1.0
+            Versão 1.0
           </p>
         </div>
       </div>
